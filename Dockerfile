@@ -2,19 +2,23 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy backend
-COPY backend/package*.json ./backend/
-RUN cd backend && npm install
+# Copy everything first
+COPY . .
 
-# Copy backend source
-COPY backend ./backend
+# Install and build backend
+WORKDIR /app/backend
+RUN npm install --production
 
-# Copy frontend
-COPY frontend/package*.json ./frontend/
-RUN cd frontend && npm install && npm run build
+# Build frontend
+WORKDIR /app/frontend
+RUN npm install
+RUN npm run build
 
-# Create startup script
-RUN echo '#!/bin/sh\ncd /app/backend && npm start' > /entrypoint.sh && chmod +x /entrypoint.sh
+# Back to app root
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=5000
 
 EXPOSE 5000
 
