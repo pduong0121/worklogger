@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Status Logger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .navbar {
+            background-color: #333;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+        }
+
+        .navbar button {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .navbar button:hover {
+            background-color: #ff5252;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .button {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #5568d3;
+        }
+
+        .button-secondary {
+            background-color: #6c757d;
+        }
+
+        .button-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .status-in_office {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-wfh {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-business_trip {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-off {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-not_logged {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table thead {
+            background-color: #f8f9fa;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .auth-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .auth-card h1 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .auth-card a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .auth-card a:hover {
+            text-decoration: underline;
+        }
+
+        .calendar-container {
+            margin-top: 1.5rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-header h3 {
+            color: #333;
+            margin: 0;
+        }
+
+        .calendar-header button {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-table th {
+            padding: 0.5rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #ddd;
+            font-weight: bold;
+        }
+
+        .calendar-table td {
+            width: 14.28%;
+            aspect-ratio: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .calendar-table td:hover {
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .calendar-table .other-month {
+            opacity: 0.6;
+            background-color: #f8f9fa;
+        }
+
+        .calendar-table .selected {
+            border: 2px solid #667eea;
+        }
+
+        .calendar-day-number {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .calendar-day-icon {
+            font-size: 0.8rem;
+        }
+
+        .calendar-legend {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .calendar-legend p {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .selected-date-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .employee-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .employee-row:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Page -->
+    <div id="authPage" class="page active">
+        <div class="auth-page">
+            <div class="auth-card">
+                <h1 id="authTitle">Login</h1>
+                <div id="authMessage"></div>
+
+                <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                    <div id="nameField" class="input-group hidden">
+                        <label>Full Name</label>
+                        <input type="text" id="authName" placeholder="Enter your name">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email</label>
+                        <input type="email" id="authEmail" placeholder="Enter your email" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" id="authPassword" placeholder="Enter your password" required>
+                    </div>
+
+                    <div id="confirmPasswordField" class="input-group hidden">
+                        <label>Confirm Password</label>
+                        <input type="password" id="authConfirmPassword" placeholder="Confirm your password">
+                    </div>
+
+                    <div id="roleField" class="input-group hidden">
+                        <label>Role</label>
+                        <select id="authRole">
+                            <option value="employee">Employee</option>
+                            <option value="manager">Manager</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="button" style="width: 100%; margin-bottom: 1rem;">
+                        <span id="authSubmitText">Login</span>
+                    </button>
+                </form>
+
+                <p class="text-center">
+                    <span id="authToggleText">Don't have an account?</span>
+                    <a href="#" onclick="toggleAuthMode(event)" id="authToggleLink">Register here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="page">
+        <div class="navbar">
+            <h1>Work Status Logger</h1>
+            <div>
+                <span style="margin-right: 1rem;">Welcome, <span id="userName"></span></span>
+                <button onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="container" style="margin-top: 2rem;">
+            <!-- Status Logging Card -->
+            <div class="card">
+                <h2 style="margin-bottom: 1.5rem; color: #333;">Log Your Work Status</h2>
+
+                <div id="dashboardMessage"></div>
+
+                <form onsubmit="handleLogStatus(event)">
+                    <div class="input-group">
+                        <label>Select Your Status for Today</label>
+                        <select id="statusSelect" required>
+                            <option value="">-- Select Status --</option>
+                            <option value="in_office">In Office</option>
+                            <option value="wfh">Work From Home (WFH)</option>
+                            <option value="business_trip">Business Trip</option>
+                            <option value="off">Off</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="button" style="width: 100%;">Log Status</button>
+                </form>
+
+                <div id="todayStatusDiv" class="hidden" style="margin-top: 1.5rem; padding: 1rem; background-color: #f8f9fa; border-radius: 4px;">
+                    <p style="margin-bottom: 0.5rem; color: #666;">Today's Status:</p>
+                    <span id="todayStatusBadge" class="status-badge"></span>
+                </div>
+            </div>
+
+            <!-- Calendar View -->
+            <div class="card">
+                <div id="employeeCalendarContainer"></div>
+            </div>
+
+            <!-- History Table -->
+            <div class="card">
+                <h2 style="margin-bottom: 1.5rem; color: #333;">Status History (Last 30 Days)</h2>
+                <div id="historyTableContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manager Dashboard -->
+    <div id="managerPage" class="page">
+        <div class="navbar">
+            <h1>Manager Dashboard - Work Status</h1>
+            <div>
+                <span style="margin-right: 1rem;">Welcome, <span id="managerName"></span></span>
+                <button onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="container" style="margin-top: 2rem;">
+            <!-- Team Status -->
+            <div class="card">
+                <h2 style="margin-bottom: 1.5rem; color: #333;">Today's Employee Status - <span id="todayDate"></span></h2>
+                <div id="teamStatusContainer"></div>
+            </div>
+
+            <!-- Employee Calendar -->
+            <div class="card">
+                <div id="managerCalendarContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============= DATA STRUCTURE =============
+        let isRegisterMode = false;
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        let statuses = JSON.parse(localStorage.getItem('statuses')) || [];
+        let selectedEmployeeId = null;
+
+        // ============= AUTH FUNCTIONS =============
+        function toggleAuthMode(e) {
+            e.preventDefault();
+            isRegisterMode = !isRegisterMode;
+            const title = document.getElementById('authTitle');
+            const nameField = document.getElementById('nameField');
+            const confirmPasswordField = document.getElementById('confirmPasswordField');
+            const roleField = document.getElementById('roleField');
+            const submitText = document.getElementById('authSubmitText');
+            const toggleText = document.getElementById('authToggleText');
+
+            if (isRegisterMode) {
+                title.textContent = 'Register';
+                nameField.classList.remove('hidden');
+                confirmPasswordField.classList.remove('hidden');
+                roleField.classList.remove('hidden');
+                submitText.textContent = 'Register';
+                toggleText.textContent = 'Already have an account?';
+            } else {
+                title.textContent = 'Login';
+                nameField.classList.add('hidden');
+                confirmPasswordField.classList.add('hidden');
+                roleField.classList.add('hidden');
+                submitText.textContent = 'Login';
+                toggleText.textContent = "Don't have an account?";
+            }
+
+            document.getElementById('authMessage').innerHTML = '';
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            if (isRegisterMode) {
+                const name = document.getElementById('authName').value;
+                const confirmPassword = document.getElementById('authConfirmPassword').value;
+                const role = document.getElementById('authRole').value;
+
+                if (!name || !email || !password || !confirmPassword) {
+                    showAuthMessage('All fields are required', 'error');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    showAuthMessage('Passwords do not match', 'error');
+                    return;
+                }
+
+                if (users.some(u => u.email === email)) {
+                    showAuthMessage('Email already exists', 'error');
+                    return;
+                }
+
+                const newUser = {
+                    id: Date.now(),
+                    name,
+                    email,
+                    password,
+                    role
+                };
+
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                currentUser = newUser;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                loadDashboard();
+            } else {
+                const user = users.find(u => u.email === email && u.password === password);
+
+                if (!user) {
+                    showAuthMessage('Invalid email or password', 'error');
+                    return;
+                }
+
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                loadDashboard();
+            }
+        }
+
+        function showAuthMessage(message, type) {
+            const messageDiv = document.getElementById('authMessage');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('authPage').classList.add('active');
+            document.getElementById('dashboardPage').classList.remove('active');
+            document.getElementById('managerPage').classList.remove('active');
+            isRegisterMode = false;
+            document.getElementById('authForm').reset();
+            toggleAuthMode({ preventDefault: () => {} });
+        }
+
+        // ============= DASHBOARD FUNCTIONS =============
+        function loadDashboard() {
+            if (!currentUser) return;
+
+            document.getElementById('authPage').classList.remove('active');
+
+            if (currentUser.role === 'manager') {
+                document.getElementById('managerPage').classList.add('active');
+                document.getElementById('dashboardPage').classList.remove('active');
+                loadManagerDashboard();
+            } else {
+                document.getElementById('dashboardPage').classList.add('active');
+                document.getElementById('managerPage').classList.remove('active');
+                loadEmployeeDashboard();
+            }
+        }
+
+        function loadEmployeeDashboard() {
+            document.getElementById('userName').textContent = currentUser.name;
+
+            const today = getTodayDate();
+            const todayStatus = statuses.find(s => s.userId === currentUser.id && s.date === today);
+
+            if (todayStatus) {
+                document.getElementById('statusSelect').value = todayStatus.status;
+                showTodayStatus(todayStatus.status);
+            } else {
+                document.getElementById('todayStatusDiv').classList.add('hidden');
+            }
+
+            renderEmployeeCalendar();
+            renderHistoryTable();
+        }
+
+        function getTodayDate() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        function handleLogStatus(e) {
+            e.preventDefault();
+            const status = document.getElementById('statusSelect').value;
+
+            if (!status) {
+                showDashboardMessage('Please select a status', 'error');
+                return;
+            }
+
+            const today = getTodayDate();
+            const existingIndex = statuses.findIndex(s => s.userId === currentUser.id && s.date === today);
+
+            if (existingIndex >= 0) {
+                statuses[existingIndex].status = status;
+            } else {
+                statuses.push({
+                    id: Date.now(),
+                    userId: currentUser.id,
+                    status,
+                    date: today
+                });
+            }
+
+            localStorage.setItem('statuses', JSON.stringify(statuses));
+            showDashboardMessage('Status logged successfully!', 'success');
+            showTodayStatus(status);
+            renderEmployeeCalendar();
+            renderHistoryTable();
+            setTimeout(() => document.getElementById('dashboardMessage').innerHTML = '', 3000);
+        }
+
+        function showDashboardMessage(message, type) {
+            const messageDiv = document.getElementById('dashboardMessage');
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+            messageDiv.textContent = message;
+        }
+
+        function showTodayStatus(status) {
+            const todayDiv = document.getElementById('todayStatusDiv');
+            const badge = document.getElementById('todayStatusBadge');
+            badge.className = `status-badge status-${status}`;
+            badge.textContent = status.replace('_', ' ').toUpperCase();
+            todayDiv.classList.remove('hidden');
+        }
+
+        function renderHistoryTable() {
+            const userStatuses = statuses.filter(s => s.userId === currentUser.id).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 30);
+
+            if (userStatuses.length === 0) {
+                document.getElementById('historyTableContainer').innerHTML = '<p style="color: #666;">No status history available</p>';
+                return;
+            }
+
+            let html = '<table class="table"><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody>';
+            userStatuses.forEach(status => {
+                html += `<tr>
+                    <td>${new Date(status.date + 'T00:00:00').toLocaleDateString()}</td>
+                    <td><span class="status-badge status-${status.status}">${status.status.replace('_', ' ').toUpperCase()}</span></td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+
+            document.getElementById('historyTableContainer').innerHTML = html;
+        }
+
+        // ============= CALENDAR FUNCTIONS =============
+        function renderEmployeeCalendar() {
+            const container = document.getElementById('employeeCalendarContainer');
+            container.innerHTML = renderCalendar(currentUser.id, currentUser.name, true);
+        }
+
+        function renderCalendar(userId, userName, isEmployee = false) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+
+            return `
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="button button-secondary" onclick="previousMonth('${userId}', ${year}, ${month}, ${isEmployee})">← Previous</button>
+                        <h3 id="monthYear-${userId}">${getMonthYear(year, month)}</h3>
+                        <button class="button button-secondary" onclick="nextMonth('${userId}', ${year}, ${month}, ${isEmployee})">Next →</button>
+                    </div>
+                    <div id="calendar-${userId}"></div>
+                    <div class="calendar-legend">
+                        <p>Legend:</p>
+                        <div class="legend-grid">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #d4edda;"></div>
+                                <span>In Office 🏢</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #cce5ff;"></div>
+                                <span>WFH 🏠</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #fff3cd;"></div>
+                                <span>Business Trip ✈️</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #f8d7da;"></div>
+                                <span>Off 📅</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="selectedDateInfo-${userId}"></div>
+                </div>
+            `;
+        }
+
+        function generateCalendar(userId, year, month) {
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const prevLastDay = new Date(year, month, 0);
+
+            const firstDayOfWeek = firstDay.getDay();
+            const lastDateOfMonth = lastDay.getDate();
+            const prevLastDate = prevLastDay.getDate();
+
+            let html = '<table class="calendar-table"><thead><tr>';
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            days.forEach(day => html += `<th>${day}</th>`);
+            html += '</tr></thead><tbody><tr>';
+
+            // Previous month days
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                html += '<td class="other-month"><div class="calendar-day-number">' + (prevLastDate - i) + '</div></td>';
+            }
+
+            // Current month days
+            for (let i = 1; i <= lastDateOfMonth; i++) {
+                const date = new Date(year, month, i).toISOString().split('T')[0];
+                const status = statuses.find(s => s.userId === userId && s.date === date);
+                const bgColor = getStatusColor(status?.status);
+                const icon = getStatusIcon(status?.status);
+
+                html += `<td style="background-color: ${bgColor}; cursor: pointer;" onclick="selectDate('${userId}', '${date}')" data-date="${date}">
+                    <div class="calendar-day-number">${i}</div>
+                    ${status ? `<div class="calendar-day-icon">${icon}</div>` : ''}
+                </td>`;
+
+                if ((i + firstDayOfWeek) % 7 === 0) {
+                    html += '</tr><tr>';
+                }
+            }
+
+            // Next month days
+            const remainingCells = 42 - (lastDateOfMonth + firstDayOfWeek);
+            for (let i = 1; i <= remainingCells; i++) {
+                html += '<td class="other-month"><div class="calendar-day-number">' + i + '</div></td>';
+            }
+
+            html += '</tr></tbody></table>';
+            return html;
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'in_office': '#d4edda',
+                'wfh': '#cce5ff',
+                'business_trip': '#fff3cd',
+                'off': '#f8d7da'
+            };
+            return colors[status] || '#f8f9fa';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'in_office': '🏢',
+                'wfh': '🏠',
+                'business_trip': '✈️',
+                'off': '📅'
+            };
+            return icons[status] || '';
+        }
+
+        function getMonthYear(year, month) {
+            const date = new Date(year, month);
+            return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        }
+
+        function selectDate(userId, date) {
+            const status = statuses.find(s => s.userId === userId && s.date === date);
+            const statusText = status ? status.status.replace('_', ' ').toUpperCase() : 'No status';
+            const badgeClass = status ? `status-badge status-${status.status}` : 'status-badge status-not_logged';
+
+            const infoDiv = document.getElementById(`selectedDateInfo-${userId}`);
+            infoDiv.innerHTML = `
+                <div class="selected-date-info">
+                    <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
+                        <strong>Date:</strong> ${new Date(date + 'T00:00:00').toLocaleDateString()}
+                    </p>
+                    <p style="margin: 0; color: #333;">
+                        <strong>Status:</strong> <span class="${badgeClass}">${statusText}</span>
+                    </p>
+                </div>
+            `;
+        }
+
+        function previousMonth(userId, year, month, isEmployee) {
+            const newDate = new Date(year, month - 1);
+            updateCalendar(userId, newDate.getFullYear(), newDate.getMonth(), isEmployee);
+        }
+
+        function nextMonth(userId, year, month, isEmployee) {
+            const newDate = new Date(year, month + 1);
+            updateCalendar(userId, newDate.getFullYear(), newDate.getMonth(), isEmployee);
+        }
+
+        function updateCalendar(userId, year, month, isEmployee) {
+            const container = document.getElementById(`calendar-${userId}`);
+            const monthYearSpan = document.getElementById(`monthYear-${userId}`);
+            const infoDiv = document.getElementById(`selectedDateInfo-${userId}`);
+
+            container.innerHTML = generateCalendar(userId, year, month);
+            monthYearSpan.textContent = getMonthYear(year, month);
+            infoDiv.innerHTML = '';
+        }
+
+        // ============= MANAGER DASHBOARD =============
+        function loadManagerDashboard() {
+            document.getElementById('managerName').textContent = currentUser.name;
+
+            const today = getTodayDate();
+            document.getElementById('todayDate').textContent = new Date(today + 'T00:00:00').toLocaleDateString();
+
+            const employees = users.filter(u => u.role === 'employee');
+            let html = '<table class="table"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+
+            employees.forEach(emp => {
+                const empStatus = statuses.find(s => s.userId === emp.id && s.date === today);
+                const status = empStatus?.status || 'not_logged';
+                const badgeClass = `status-badge status-${status}`;
+
+                html += `<tr class="employee-row" onclick="selectEmployee(${emp.id})">
+                    <td><strong>${emp.name}</strong></td>
+                    <td>${emp.email}</td>
+                    <td><span class="${badgeClass}">${status.replace('_', ' ').toUpperCase()}</span></td>
+                    <td><button class="button button-secondary" onclick="selectEmployee(${emp.id}); event.stopPropagation();" style="font-size: 0.9rem; padding: 0.5rem 1rem;">View History</button></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('teamStatusContainer').innerHTML = html;
+
+            renderManagerCalendar();
+        }
+
+        function selectEmployee(empId) {
+            selectedEmployeeId = empId;
+            renderManagerCalendar();
+
+            const manager = document.getElementById('managerCalendarContainer');
+            manager.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderManagerCalendar() {
+            const container = document.getElementById('managerCalendarContainer');
+
+            if (!selectedEmployeeId) {
+                container.innerHTML = '<p style="color: #666;">Select an employee to view their status history</p>';
+                return;
+            }
+
+            const employee = users.find(u => u.id === selectedEmployeeId);
+            if (!employee) return;
+
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+
+            container.innerHTML = `
+                <div class="calendar-container">
+                    <h3 style="margin-bottom: 1rem; color: #333;">${employee.name}'s Status Calendar</h3>
+                    <div class="calendar-header">
+                        <button class="button button-secondary" onclick="previousMonth(${selectedEmployeeId}, ${year}, ${month}, false)">← Previous</button>
+                        <h4 id="monthYear-${selectedEmployeeId}" style="margin: 0;">${getMonthYear(year, month)}</h4>
+                        <button class="button button-secondary" onclick="nextMonth(${selectedEmployeeId}, ${year}, ${month}, false)">Next →</button>
+                    </div>
+                    <div id="calendar-${selectedEmployeeId}"></div>
+                    <div class="calendar-legend">
+                        <p>Legend:</p>
+                        <div class="legend-grid">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #d4edda;"></div>
+                                <span>In Office 🏢</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #cce5ff;"></div>
+                                <span>WFH 🏠</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #fff3cd;"></div>
+                                <span>Business Trip ✈️</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background-color: #f8d7da;"></div>
+                                <span>Off 📅</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="selectedDateInfo-${selectedEmployeeId}"></div>
+                </div>
+            `;
+
+            updateCalendar(selectedEmployeeId, year, month, false);
+        }
+
+        // ============= INITIALIZATION =============
+        document.addEventListener('DOMContentLoaded', function() {
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
