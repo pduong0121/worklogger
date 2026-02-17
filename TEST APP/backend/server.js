@@ -25,9 +25,13 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-// Serve React app for any other route
+// Serve React app for any other route (handle SPA routing)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/build/index.html'), (err) => {
+    if (err) {
+      res.status(500).send('Error loading app');
+    }
+  });
 });
 
 app.listen(PORT, () => {
